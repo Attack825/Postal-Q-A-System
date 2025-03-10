@@ -1,3 +1,6 @@
+# vscode extension
+.history/*
+
 # Logs
 logs
 *.log
