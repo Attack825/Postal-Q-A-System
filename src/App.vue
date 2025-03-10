@@ -13,15 +13,15 @@ import { RouterLink, RouterView } from 'vue-router'
 
       <nav class="sidebar-nav">
         <RouterLink to="/" class="nav-item">
-          <i class="fas fa-home"></i>
+          <font-awesome-icon :icon="['fas', 'house']" />
           <span>首页</span>
         </RouterLink>
         <RouterLink to="/chat" class="nav-item">
-          <i class="fas fa-comments"></i>
+          <font-awesome-icon :icon="['fas', 'comments']" />
           <span>聊天</span>
         </RouterLink>
         <RouterLink to="/settings" class="nav-item">
-          <i class="fas fa-cog"></i>
+          <font-awesome-icon :icon="['fas', 'gear']" />
           <span>设置</span>
         </RouterLink>
       </nav>
