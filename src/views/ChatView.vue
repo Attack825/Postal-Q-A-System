@@ -1,32 +1,59 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { apiService } from '@/services/api'
+import type { ChatMessage } from '@/services/api'
+import { ElMessage } from 'element-plus'
 
-const messages = ref([
+/**
+ * 聊天消息
+ */
+const messages = ref<ChatMessage[]>([
   {
-    role: 'assistant',
+    role: 'assistant' as const,
     content: '你好！我是AI助手，有什么我可以帮你的吗？',
   },
 ])
 
+/** 用户输入 */
 const userInput = ref('')
 
-const sendMessage = () => {
-  if (!userInput.value.trim()) return
+const isLoading = ref(false)
 
-  messages.value.push({
+/**
+ * 发送消息, 并获取回复
+ */
+const sendMessage = async () => {
+  if (!userInput.value.trim() || isLoading.value) return
+
+  const userMessage: ChatMessage = {
     role: 'user',
     content: userInput.value,
-  })
+  }
 
-  // 这里后续可以添加实际的API调用
-  messages.value.push({
-    role: 'assistant',
-    content: '这是一个模拟的回复消息。在实际应用中，这里应该调用AI API获取响应。',
-  })
-
+  messages.value.push(userMessage)
+  const currentInput = userInput.value
   userInput.value = ''
+
+  isLoading.value = true
+  try {
+    const response = await apiService.chatCompletion([...messages.value])
+
+    messages.value.push({
+      role: 'assistant',
+      content: response,
+    })
+  } catch {
+    ElMessage.error('发送消息失败，请重试')
+    messages.value = messages.value.filter((msg) => msg.content !== currentInput)
+  } finally {
+    isLoading.value = false
+  }
 }
 
+/**
+ * 处理文件上传
+ * @param event 事件
+ */
 const handleFileUpload = (event: Event) => {
   const input = event.target as HTMLInputElement
   if (input.files?.length) {
@@ -36,7 +63,10 @@ const handleFileUpload = (event: Event) => {
   }
 }
 
-// 修改自动调整高度的功能
+/**
+ * 自动调整文本框高度
+ * @param event 输入事件
+ */
 const autoResize = (event: Event) => {
   const textarea = event.target as HTMLTextAreaElement
   const maxHeight = 150 // 最大高度
@@ -52,6 +82,13 @@ const autoResize = (event: Event) => {
   textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
 }
 
+/**
+ * 处理键盘事件:
+ * - 如果是 Shift + Enter，允许换行
+ * - 如果是单独的 Enter，阻止默认换行并发送消息
+ * @param event 键盘事件
+ *
+ */
 const handleKeydown = (event: KeyboardEvent) => {
   // 如果是 Shift + Enter，允许换行
   if (event.key === 'Enter' && event.shiftKey) {
@@ -80,6 +117,7 @@ const handleKeydown = (event: KeyboardEvent) => {
       <div class="input-wrapper">
         <textarea
           v-model="userInput"
+          :disabled="isLoading"
           placeholder="输入消息... (Shift + Enter 换行)"
           @keydown="handleKeydown"
           @input="autoResize"
@@ -87,13 +125,16 @@ const handleKeydown = (event: KeyboardEvent) => {
           class="message-input"
         ></textarea>
         <div class="actions">
-          <label class="file-upload">
-            <input type="file" @change="handleFileUpload" class="hidden" />
+          <label class="file-upload" :class="{ disabled: isLoading }">
+            <input type="file" @change="handleFileUpload" class="hidden" :disabled="isLoading" />
             <font-awesome-icon :icon="['fas', 'arrow-up-from-bracket']" />
           </label>
 
-          <button @click="sendMessage" class="send-button">
-            <font-awesome-icon :icon="['fas', 'paper-plane']" />
+          <button @click="sendMessage" class="send-button" :disabled="isLoading">
+            <font-awesome-icon
+              :icon="['fas', isLoading ? 'fa-spinner' : 'paper-plane']"
+              :class="{ 'fa-spin': isLoading }"
+            />
           </button>
         </div>
       </div>
@@ -226,5 +267,15 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 .send-button:hover {
   color: #1d4ed8;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

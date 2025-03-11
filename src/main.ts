@@ -1,4 +1,7 @@
 import './assets/main.css'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -35,8 +38,8 @@ import router from './router'
 const app = createApp(App)
 
 app.component('font-awesome-icon', FontAwesomeIcon)
-
 app.use(createPinia())
+app.use(ElementPlus)
 app.use(router)
 
 app.mount('#app')
