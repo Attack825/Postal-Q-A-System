@@ -192,15 +192,17 @@ const renderMarkdown = (content: string) => {
   display: flex;
   flex-direction: column;
   background-color: var(--main-bg);
+  padding: 0;
+  margin: 0;
 }
 
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 
   /* 自定义滚动条样式 */
   scrollbar-width: none; /* Firefox */
@@ -212,27 +214,30 @@ const renderMarkdown = (content: string) => {
 }
 
 .message {
-  max-width: 80%;
-  padding: 1rem;
+  max-width: 85%;
+  padding: 0.75rem;
   border-radius: 0.5rem;
   line-height: 1.5;
+  font-size: 0.95rem;
 }
 
 .message.user {
   align-self: flex-end;
   background-color: var(--primary-color);
   color: white;
+  margin-left: 1rem;
 }
 
 .message.assistant {
   align-self: flex-start;
   background-color: #374151;
   color: white;
+  margin-right: 1rem;
 }
 
 .input-container {
-  padding: 1rem;
-  background-color: var(--main-bg); /* 改为与chat-container相同的背景色 */
+  padding: 0.75rem;
+  background-color: var(--main-bg);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -251,16 +256,16 @@ const renderMarkdown = (content: string) => {
   border: none;
   padding: 0.5rem;
   color: white;
-  resize: vertical; /* 允许垂直拖动 */
+  resize: none;
   outline: none;
   min-height: 24px;
-  max-height: 150px;
+  max-height: 120px;
   line-height: 1.5;
   box-sizing: border-box;
   display: block;
   width: 100%;
   font-family: inherit;
-  font-size: inherit;
+  font-size: 0.95rem;
 }
 
 .message-input::-webkit-scrollbar {
@@ -325,19 +330,20 @@ const renderMarkdown = (content: string) => {
 
 .message-content {
   line-height: 1.6;
+  word-break: break-word;
 }
 
 .message-content :deep(pre) {
   background-color: #1f2937;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: 0.5rem;
   overflow-x: auto;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 }
 
 .message-content :deep(code) {
   font-family: 'Fira Code', monospace;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
 
 .message-content :deep(p) {
@@ -352,7 +358,7 @@ const renderMarkdown = (content: string) => {
 
 .message-content :deep(blockquote) {
   border-left: 4px solid var(--primary-color);
-  margin: 1em 0;
+  margin: 0.75em 0;
   padding-left: 1em;
   color: var(--text-secondary);
 }
@@ -360,7 +366,8 @@ const renderMarkdown = (content: string) => {
 .message-content :deep(table) {
   border-collapse: collapse;
   width: 100%;
-  margin: 1em 0;
+  margin: 0.75em 0;
+  font-size: 0.9em;
 }
 
 .message-content :deep(th),
@@ -371,5 +378,69 @@ const renderMarkdown = (content: string) => {
 
 .message-content :deep(th) {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+  .message {
+    max-width: 90%;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .message.user {
+    margin-left: 0.5rem;
+  }
+
+  .message.assistant {
+    margin-right: 0.5rem;
+  }
+
+  .input-container {
+    padding: 0.5rem;
+  }
+
+  .message-input {
+    font-size: 0.9rem;
+    max-height: 100px;
+  }
+
+  .message-content :deep(pre) {
+    padding: 0.5rem;
+  }
+
+  .message-content :deep(code) {
+    font-size: 0.8em;
+  }
+
+  .message-content :deep(table) {
+    font-size: 0.8em;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .message {
+    max-width: 95%;
+    padding: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .input-wrapper {
+    padding: 0.4rem;
+  }
+
+  .message-input {
+    font-size: 0.85rem;
+    max-height: 80px;
+  }
+
+  .actions {
+    gap: 0.3rem;
+  }
+
+  .file-upload,
+  .send-button {
+    padding: 0.4rem;
+  }
 }
 </style>
