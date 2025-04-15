@@ -1,14 +1,10 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-// 导出模块
+// defineStore 定义一个store，使用pinia管理状态
 export const useCounterStore = defineStore('counter', () => {
-  // 模块中的响应式将自动被注入到store中
-  // 属性
   const count = ref(0)
-  // 简单计算的基本属性
   const doubleCount = computed(() => count.value * 2)
-  // 函数操作
   function increment() {
     count.value++
   }

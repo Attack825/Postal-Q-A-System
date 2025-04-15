@@ -3,6 +3,21 @@ import { ref } from 'vue'
 import { apiService } from '@/services/api'
 import type { ChatMessage } from '@/services/api'
 import { ElMessage } from 'element-plus'
+import { marked, type MarkedOptions } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark.css'
+
+// 配置 marked 用于渲染markdown
+marked.setOptions({
+  highlight: function (code: string, lang: string) {
+    if (lang && hljs.getLanguage(lang)) {
+      return hljs.highlight(code, { language: lang }).value
+    }
+    return hljs.highlightAuto(code).value
+  },
+  breaks: true,
+  gfm: true,
+} as MarkedOptions)
 
 /**
  * 聊天消息
@@ -18,6 +33,7 @@ const messages = ref<ChatMessage[]>([
 const userInput = ref('')
 
 const isLoading = ref(false)
+const currentResponse = ref('')
 
 /**
  * 发送消息, 并获取回复
@@ -35,18 +51,26 @@ const sendMessage = async () => {
   userInput.value = ''
 
   isLoading.value = true
-  try {
-    const response = await apiService.chatCompletion([...messages.value])
+  currentResponse.value = ''
 
-    messages.value.push({
-      role: 'assistant',
-      content: response,
+  // 添加一个空的助手消息，用于流式更新
+  messages.value.push({
+    role: 'assistant',
+    content: '',
+  })
+
+  try {
+    await apiService.streamChatCompletion([...messages.value], (chunk) => {
+      currentResponse.value += chunk
+      // 更新最后一条消息的内容
+      messages.value[messages.value.length - 1].content = currentResponse.value
     })
   } catch {
     ElMessage.error('发送消息失败，请重试')
     messages.value = messages.value.filter((msg) => msg.content !== currentInput)
   } finally {
     isLoading.value = false
+    currentResponse.value = ''
   }
 }
 
@@ -101,15 +125,23 @@ const handleKeydown = (event: KeyboardEvent) => {
     sendMessage()
   }
 }
+
+/**
+ * 渲染 Markdown 内容
+ */
+const renderMarkdown = (content: string) => {
+  return marked(content)
+}
 </script>
 
 <template>
   <div class="chat-container">
     <div class="messages-container">
       <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
-        <div class="message-content" style="white-space: pre-wrap">
-          {{ message.content }}
-        </div>
+        <div
+          class="message-content markdown-body"
+          v-html="message.role === 'assistant' ? renderMarkdown(message.content) : message.content"
+        ></div>
       </div>
     </div>
 
@@ -277,5 +309,55 @@ const handleKeydown = (event: KeyboardEvent) => {
 .send-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.message-content {
+  line-height: 1.6;
+}
+
+.message-content :deep(pre) {
+  background-color: #1f2937;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.message-content :deep(code) {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9em;
+}
+
+.message-content :deep(p) {
+  margin: 0.5em 0;
+}
+
+.message-content :deep(ul),
+.message-content :deep(ol) {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.message-content :deep(blockquote) {
+  border-left: 4px solid var(--primary-color);
+  margin: 1em 0;
+  padding-left: 1em;
+  color: var(--text-secondary);
+}
+
+.message-content :deep(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.message-content :deep(th),
+.message-content :deep(td) {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5em;
+}
+
+.message-content :deep(th) {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 </style>
