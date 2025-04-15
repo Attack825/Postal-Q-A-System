@@ -39,6 +39,16 @@ const navigateToChat = () => {
           <h3>灵活配置</h3>
           <p>支持自定义 API 配置，适配不同的模型服务</p>
         </div>
+        <div class="feature-card">
+          <div class="feature-icon">💾</div>
+          <h3>记忆化</h3>
+          <p>自动保存对话历史，刷新页面后仍可继续对话</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3>物流知识库</h3>
+          <p>内置物流行业专业知识，提供专业的物流咨询</p>
+        </div>
       </div>
     </div>
 

@@ -11,25 +11,26 @@ export class ApiService {
     return useSettingsStore()
   }
 
+  private async validateMessages(messages: ChatMessage[]) {
+    if (!Array.isArray(messages) || messages.length === 0) {
+      throw new Error('消息列表不能为空')
+    }
+
+    // 确保消息格式正确
+    return messages.map((msg) => ({
+      role: msg.role,
+      content: String(msg.content),
+    }))
+  }
+
   async chatCompletion(messages: ChatMessage[]) {
     try {
       const settingsStore = this.getSettingsStore()
-
-      // 验证消息格式
-      if (!Array.isArray(messages) || messages.length === 0) {
-        throw new Error('消息列表不能为空')
-      }
-
-      // 确保消息格式正确
-      const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: String(msg.content),
-      }))
+      const formattedMessages = await this.validateMessages(messages)
 
       const response = await axios.post(
         `${settingsStore.settings.baseUrl}/chat/completions`,
         JSON.stringify({
-          // 将整个请求体序列化为 JSON 字符串
           model: settingsStore.settings.model,
           messages: formattedMessages,
           temperature: Number(settingsStore.settings.temperature),
@@ -56,17 +57,7 @@ export class ApiService {
   async streamChatCompletion(messages: ChatMessage[], onChunk: (chunk: string) => void) {
     try {
       const settingsStore = this.getSettingsStore()
-
-      // 验证消息格式
-      if (!Array.isArray(messages) || messages.length === 0) {
-        throw new Error('消息列表不能为空')
-      }
-
-      // 确保消息格式正确
-      const formattedMessages = messages.map((msg) => ({
-        role: msg.role,
-        content: String(msg.content),
-      }))
+      const formattedMessages = await this.validateMessages(messages)
 
       const response = await fetch(`${settingsStore.settings.baseUrl}/chat/completions`, {
         method: 'POST',

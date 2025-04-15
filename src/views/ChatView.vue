@@ -53,7 +53,8 @@ const sendMessage = async () => {
   })
 
   try {
-    await apiService.streamChatCompletion([...chatStore.messages], (chunk) => {
+    // 使用完整的对话历史
+    await apiService.streamChatCompletion(chatStore.messages, (chunk) => {
       chatStore.setCurrentResponse(chatStore.currentResponse + chunk)
       chatStore.updateLastMessage(chatStore.currentResponse)
     })
