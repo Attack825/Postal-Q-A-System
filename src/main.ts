@@ -31,14 +31,17 @@ library.add(
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate' // 持久化插件，将状态保存到浏览器本地存储
 
 import App from './App.vue'
 import router from './router'
 
 const app = createApp(App)
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 app.component('font-awesome-icon', FontAwesomeIcon)
-app.use(createPinia())
+app.use(pinia)
 app.use(ElementPlus)
 app.use(router)
 

@@ -8,7 +8,7 @@ import { RouterLink, RouterView } from 'vue-router'
     <aside class="sidebar">
       <div class="sidebar-header">
         <img alt="Logo" class="logo" src="@/assets/logo.svg" width="32" height="32" />
-        <h1 class="sidebar-title">AI Assistant</h1>
+        <h1 class="sidebar-title">物流问答系统</h1>
       </div>
 
       <nav class="sidebar-nav">

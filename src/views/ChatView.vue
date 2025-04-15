@@ -6,6 +6,9 @@ import { ElMessage } from 'element-plus'
 import { marked, type MarkedOptions } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
+import { useChatStore } from '@/stores/chat'
+
+const chatStore = useChatStore()
 
 // 配置 marked 用于渲染markdown
 marked.setOptions({
@@ -22,18 +25,8 @@ marked.setOptions({
 /**
  * 聊天消息
  */
-const messages = ref<ChatMessage[]>([
-  {
-    role: 'assistant' as const,
-    content: '你好！我是AI助手，有什么我可以帮你的吗？',
-  },
-])
-
-/** 用户输入 */
 const userInput = ref('')
-
 const isLoading = ref(false)
-const currentResponse = ref('')
 
 /**
  * 发送消息, 并获取回复
@@ -46,31 +39,30 @@ const sendMessage = async () => {
     content: userInput.value,
   }
 
-  messages.value.push(userMessage)
+  chatStore.addMessage(userMessage)
   const currentInput = userInput.value
   userInput.value = ''
 
   isLoading.value = true
-  currentResponse.value = ''
+  chatStore.setCurrentResponse('')
 
   // 添加一个空的助手消息，用于流式更新
-  messages.value.push({
+  chatStore.addMessage({
     role: 'assistant',
     content: '',
   })
 
   try {
-    await apiService.streamChatCompletion([...messages.value], (chunk) => {
-      currentResponse.value += chunk
-      // 更新最后一条消息的内容
-      messages.value[messages.value.length - 1].content = currentResponse.value
+    await apiService.streamChatCompletion([...chatStore.messages], (chunk) => {
+      chatStore.setCurrentResponse(chatStore.currentResponse + chunk)
+      chatStore.updateLastMessage(chatStore.currentResponse)
     })
   } catch {
     ElMessage.error('发送消息失败，请重试')
-    messages.value = messages.value.filter((msg) => msg.content !== currentInput)
+    chatStore.messages = chatStore.messages.filter((msg) => msg.content !== currentInput)
   } finally {
     isLoading.value = false
-    currentResponse.value = ''
+    chatStore.setCurrentResponse('')
   }
 }
 
@@ -137,7 +129,11 @@ const renderMarkdown = (content: string) => {
 <template>
   <div class="chat-container">
     <div class="messages-container">
-      <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
+      <div
+        v-for="(message, index) in chatStore.messages"
+        :key="index"
+        :class="['message', message.role]"
+      >
         <div
           class="message-content markdown-body"
           v-html="message.role === 'assistant' ? renderMarkdown(message.content) : message.content"
