@@ -7,6 +7,7 @@ import { marked, type MarkedOptions } from 'marked'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
 import { useChatStore } from '@/stores/chat'
+import { knowledgeBaseService } from '@/services/knowledgeBase'
 
 const chatStore = useChatStore()
 
@@ -53,8 +54,22 @@ const sendMessage = async () => {
   })
 
   try {
-    // 使用完整的对话历史
-    await apiService.streamChatCompletion(chatStore.messages, (chunk) => {
+    // 检索相关知识
+    const knowledgeItems = await knowledgeBaseService.searchKnowledge(currentInput)
+    const knowledgePrompt = knowledgeBaseService.formatKnowledgeAsPrompt(knowledgeItems)
+
+    // 构建系统消息
+    const systemMessage: ChatMessage = {
+      role: 'system',
+      content:
+        '你是一个专业的物流顾问，请根据提供的知识回答问题。如果问题超出知识范围，请明确告知。' +
+        (knowledgePrompt ? '\n\n' + knowledgePrompt : ''),
+    }
+
+    // 构建完整的消息历史
+    const messagesWithKnowledge = [systemMessage, ...chatStore.messages]
+
+    await apiService.streamChatCompletion(messagesWithKnowledge, (chunk) => {
       chatStore.setCurrentResponse(chatStore.currentResponse + chunk)
       chatStore.updateLastMessage(chatStore.currentResponse)
     })
