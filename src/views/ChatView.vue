@@ -62,7 +62,7 @@ const sendMessage = async () => {
     const systemMessage: ChatMessage = {
       role: 'system',
       content:
-        '你是一个专业的物流顾问，请根据提供的知识回答问题。如果问题超出知识范围，请明确告知。' +
+        '你是一个专业的物流顾问，请根据提供的知识回答问题。' +
         (knowledgePrompt ? '\n\n' + knowledgePrompt : ''),
     }
 
